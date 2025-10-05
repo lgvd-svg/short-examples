@@ -13,7 +13,7 @@ class TransientDimensionlessPyrolysis:
             'length': 1.0, 'time': 3600, 'energy': 1000, 'volume': 1.0
         }
         
-        # 🔥 PARÁMETROS CINÉTICOS OPTIMIZADOS PARA VER EVOLUCIÓN
+        # PARÁMETROS CINÉTICOS OPTIMIZADOS PARA VER EVOLUCIÓN
         self.k0_star = 5.0       # REDUCIDO: Para hacer la reacción más lenta
         self.Ea_star = 1.0        # REDUCIDO: Para activar más fácilmente
         self.Da = 0.8            # AUMENTADO: Para ver mejor los efectos
@@ -28,7 +28,7 @@ class TransientDimensionlessPyrolysis:
             'moisture_star': 0.4      # AUMENTADO: Más humedad para ver secado
         }
         
-        # ⏰ TIEMPO ADIMENSIONAL EXTENDIDO
+        # TIEMPO ADIMENSIONAL EXTENDIDO
         self.tau_max = 10.0       # AUMENTADO SIGNIFICATIVAMENTE
         self.n_steps = 2000       # MÁS PUNTOS PARA MEJOR RESOLUCIÓN
     
@@ -38,13 +38,13 @@ class TransientDimensionlessPyrolysis:
         """
         biomass, biooil, gas, char, temp, moisture = y_star
         
-        # 🚨 CORRECCIÓN: Evitar división por cero en Arrhenius
+        # CORRECCIÓN: Evitar división por cero en Arrhenius
         temp_safe = max(temp, 0.1)
         
         # Constante cinética adimensional - MÁS LENTA
         k_star = self.k0_star * np.exp(-self.Ea_star / temp_safe)
         
-        # 🔥 TASAS DE REACCIÓN MÁS LENTAS PARA VER EVOLUCIÓN
+        # TASAS DE REACCIÓN MÁS LENTAS PARA VER EVOLUCIÓN
         # 1. Secado 
         drying_rate = 1.5 * moisture * temp_safe if temp_safe > 0.4 else 0.0
         
@@ -54,7 +54,7 @@ class TransientDimensionlessPyrolysis:
         # 3. Pirólisis secundaria - MUCHO MÁS LENTA
         secondary_rate = 0.02 * k_star * biooil * self.Da /(1 + 0.1*char + 0.1*biooil)
         
-        # 🎯 SISTEMA DE EDOS CON EVOLUCIÓN MÁS GRADUAL
+        # SISTEMA DE EDOS CON EVOLUCIÓN MÁS GRADUAL
         dbiomass_dt = -pyrolysis_rate
         
         dbiooil_dt = (0.5 * pyrolysis_rate - secondary_rate)
@@ -63,7 +63,7 @@ class TransientDimensionlessPyrolysis:
         
         dchar_dt = (0.2 * pyrolysis_rate + 0.6 * secondary_rate)
         
-        # 🔥 BALANCE DE ENERGÍA MÁS LENTO
+        # BALANCE DE ENERGÍA MÁS LENTO
         heat_supplied = 0.5 * (1.0 - temp_safe)   # REDUCIDO: Calentamiento más lento
         heat_reaction = 0.1 * pyrolysis_rate      # REDUCIDO
         heat_losses = 0.2 * (temp_safe - 0.5)     # AJUSTADO
@@ -83,10 +83,10 @@ class TransientDimensionlessPyrolysis:
         # Condiciones iniciales
         y0 = list(self.initial_conditions.values())
         
-        # 🎯 MÁS PUNTOS DE EVALUACIÓN PARA MEJOR RESOLUCIÓN
+        # MÁS PUNTOS DE EVALUACIÓN PARA MEJOR RESOLUCIÓN
         t_eval = np.linspace(t_span[0], t_span[1], self.n_steps)
         
-        print(f"⏰ Resolviendo desde τ=0 hasta τ={self.tau_max} con {self.n_steps} puntos...")
+        print(f" Resolviendo desde τ=0 hasta τ={self.tau_max} con {self.n_steps} puntos...")
         
         # Resolver sistema de EDOs
         solution = solve_ivp(
@@ -100,7 +100,7 @@ class TransientDimensionlessPyrolysis:
         )
         
         if not solution.success:
-            print(f"⚠️ Advertencia: {solution.message}")
+            print(f" Advertencia: {solution.message}")
         
         self.solution = solution
         return solution
@@ -148,7 +148,7 @@ class TransientDimensionlessPyrolysis:
             'Biomasa residual': biomass[-1]
         }
         
-        print(f"\n🎯 RENDIMIENTOS FINALES:")
+        print(f"\n RENDIMIENTOS FINALES:")
         for product, yield_val in final_yields.items():
             print(f"   {product}: {yield_val:.3f}")
         
@@ -227,7 +227,7 @@ class TransientDimensionlessReactor:
         
         theta_safe = max(theta, 0.1)
         
-        # 🎯 DINÁMICA MÁS LENTA
+        # DINÁMICA MÁS LENTA
         dtheta_dtau = 0.6 * (1.0 - theta_safe) - 0.2 * conversion  # REDUCIDO
         
         k_rate = 2.0 * np.exp(-10.0 / theta_safe)  # REDUCIDO
@@ -328,7 +328,7 @@ class CompleteTransientPyrolysis:
         pyro_data = self.results['pyrolysis']
         t_pyro = pyro_data['time_star']
         
-        # 🎯 GRÁFICA 1 MEJORADA: Composición vs tiempo
+        # GRÁFICA 1: Composición vs tiempo
         axes[0, 0].plot(t_pyro, pyro_data['biomass'], 'b-', label='Biomasa', linewidth=2.5)
         axes[0, 0].plot(t_pyro, pyro_data['biooil'], 'g-', label='Bio-oil', linewidth=2.5)
         axes[0, 0].plot(t_pyro, pyro_data['gas'], 'r-', label='Gas', linewidth=2.5)
@@ -404,14 +404,14 @@ class CompleteTransientPyrolysis:
         print("REPORTE CON TIEMPO EXTENDIDO")
         print("="*70)
         
-        print(f"\n⏰ RANGO TEMPORAL: τ = 0 a {self.pyrolysis_system.tau_max}")
-        print(f"📊 PUNTOS DE SIMULACIÓN: {len(pyro_data['time_star'])}")
+        print(f"\n RANGO TEMPORAL: τ = 0 a {self.pyrolysis_system.tau_max}")
+        print(f" PUNTOS DE SIMULACIÓN: {len(pyro_data['time_star'])}")
         
         # Análisis de evolución
         biomass_change = pyro_data['biomass'][0] - pyro_data['biomass'][-1]
         biooil_max = np.max(pyro_data['biooil'])
         
-        print(f"\n📈 EVOLUCIÓN OBSERVADA:")
+        print(f"\n EVOLUCIÓN OBSERVADA:")
         print(f"   Cambio en biomasa: {pyro_data['biomass'][0]:.3f} → {pyro_data['biomass'][-1]:.3f}")
         print(f"   Bio-oil máximo: {biooil_max:.3f}")
         print(f"   Conversión final: {1 - pyro_data['biomass'][-1]:.3f}")
@@ -420,7 +420,7 @@ class CompleteTransientPyrolysis:
 
 def main_transient_extended(tau_max=10.0):
     """Función principal con tiempo extendido"""
-    print("🚀 INICIANDO SIMULACIÓN CON TIEMPO EXTENDIDO")
+    print(" INICIANDO SIMULACIÓN CON TIEMPO EXTENDIDO")
     print(f"   τ_max = {tau_max}")
     print("=" * 70)
     
@@ -444,7 +444,7 @@ def main_transient_extended(tau_max=10.0):
         }
         
         for species, variation in variations.items():
-            status = "✅ BUENA" if variation > 0.1 else "⚠️  BAJA"
+            status = "BUENA" if variation > 0.1 else "⚠️  BAJA"
             print(f"   {species}: variación = {variation:.3f} {status}")
         
         transient_system.generate_transient_report()
@@ -453,17 +453,17 @@ def main_transient_extended(tau_max=10.0):
         return transient_system, results
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return None, None
 
 # 5. EJECUTAR CON DIFERENTES TIEMPOS
 if __name__ == "__main__":
-    print("🔧 SIMULACIÓN CON TIEMPO EXTENDIDO")
+    print("SIMULACIÓN CON TIEMPO EXTENDIDO")
     
     # Probar diferentes tiempos máximos
-    time_options = [5.0, 10.0, 15.0]  # Diferentes τ_max para probar
+    time_options = [5.0, 12.0, 14.0, 16.0, 18.0, 20.0]  # Diferentes τ_max para probar
     
     for tau_max in time_options:
         print(f"\n{'='*60}")
@@ -477,12 +477,12 @@ if __name__ == "__main__":
             final_biomass = pyro_data['biomass'][-1]
             
             if final_biomass < 0.1:  # Si se alcanza conversión alta
-                print(f"✅ CON τ_max = {tau_max}: Conversión completa alcanzada")
+                print(f"CON τ_max = {tau_max}: Conversión completa alcanzada")
                 optimal_tau = tau_max
                 break
             else:
-                print(f"⚠️  CON τ_max = {tau_max}: Conversión incompleta ({final_biomass:.3f} biomasa residual)")
+                print(f"CON τ_max = {tau_max}: Conversión incompleta ({final_biomass:.3f} biomasa residual)")
         else:
-            print(f"❌ CON τ_max = {tau_max}: Simulación falló")
+            print(f"CON τ_max = {tau_max}: Simulación falló")
     
-    print(f"\n🎯 TIEMPO ÓPTIMO RECOMENDADO: τ_max = {optimal_tau if 'optimal_tau' in locals() else 10.0}")
+    print(f"\n TIEMPO ÓPTIMO RECOMENDADO: τ_max = {optimal_tau if 'optimal_tau' in locals() else 10.0}")
